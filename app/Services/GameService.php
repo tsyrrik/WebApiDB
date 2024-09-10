@@ -33,13 +33,32 @@ class GameService
         return $this->gameRepository->update($id, $data);
     }
 
-    public function deleteGame($id)
-    {
-        return $this->gameRepository->delete($id);
-    }
-
     public function getGamesByGenre($genreId)
     {
         return $this->gameRepository->findByGenre($genreId);
+    }
+    public function deleteGame($id)
+    {
+        $game = $this->gameRepository->findById($id);
+
+        if ($game) {
+            $genres = $game->genres;
+
+            $this->gameRepository->delete($id);
+
+            // Сообщения для жанров, у которых больше нет игр
+            $messages = [];
+
+            // Проверяем каждый жанр, остались ли игры у жанра
+            foreach ($genres as $genre) {
+                $remainingGames = $this->gameRepository->findByGenre($genre->id);
+
+                if ($remainingGames->isEmpty()) {
+                    $messages[] = "У жанра {$genre->name} больше нет игр в базе";
+                }
+            }
+            return $messages ?: null;
+        }
+        return null;
     }
 }

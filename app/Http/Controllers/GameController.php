@@ -39,7 +39,11 @@ class GameController extends Controller
 
     public function destroy($id)
     {
-        $this->gameService->deleteGame($id);
+        $messages = $this->gameService->deleteGame($id);
+        // Если есть сообщения о жанрах без игр, возвращаем их
+        if ($messages) {
+            return response()->json(['messages' => $messages]);
+        }
         return response()->json(null, 204);
     }
 
